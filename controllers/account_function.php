@@ -4,13 +4,12 @@ include_once '../model/datacon.php';
 include_once '../model/token_class.php';
 include_once '../model/notification_class.php';
 
-// Check if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Initialize variables from form data (sanitize and validate as needed)
-    $institution_name = $_POST['institution_name'];
-    $telephone_number = $_POST['telephone_number'];
-    $email = $_POST['email'];
-    $gps_address = $_POST['gps_address'];
+    // Sanitize and validate input data
+    $institution_name = filter_input(INPUT_POST, 'institution_name', FILTER_SANITIZE_STRING);
+    $telephone_number = filter_input(INPUT_POST, 'telephone_number', FILTER_SANITIZE_STRING);
+    $email = filter_var(filter_input(INPUT_POST, 'email'), FILTER_VALIDATE_EMAIL);
+    $gps_address = filter_input(INPUT_POST, 'gps_address', FILTER_SANITIZE_STRING);
     $date_created = date("Y-m-d H:i:s");
     $date_updated = date("Y-m-d H:i:s");
 
@@ -92,7 +91,6 @@ $update_stmt->bind_param("s", $current_time);
 if (!$update_stmt->execute()) {
     echo "Error updating status to 'Expired': " . $update_stmt->error;
 }
-
 // Close update statement
 $update_stmt->close();
 ?>

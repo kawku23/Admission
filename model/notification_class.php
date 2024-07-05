@@ -16,6 +16,13 @@ class Notification {
         $this->mail->Port = 587; // TLS port
         $this->mail->SMTPSecure = 'tls';
         $this->mail->SMTPAuth = true;
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                     'verify_peer' => false,
+                     'verify_peer_name' => false,
+                     'allow_self_signed' => true
+                 )
+        );   
         $this->mail->Username = 'dasoma@netconceptsgh.com'; // Your Office365 email address
         $this->mail->Password = 'Wins@123451'; 
         $this->mail->SMTPDebug = 2; 
