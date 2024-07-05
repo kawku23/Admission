@@ -1,8 +1,8 @@
 <?php
 // Include necessary files
-include_once '../model/datacon.php';
-include_once '../model/token_class.php';
-include_once '../model/notification_class.php';
+include_once '.././model/datacon.php';
+include_once '.././model/token_class.php';
+include_once '.././model/notification_class.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Sanitize and validate input data
@@ -13,9 +13,49 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $date_created = date("Y-m-d H:i:s");
     $date_updated = date("Y-m-d H:i:s");
 
+    
+    // Check if institution_name exists
+    $check_institution_stmt = $conn->prepare("SELECT * FROM vendor_registration WHERE institution_name = ?");
+    $check_institution_stmt->bind_param("s", $institution_name);
+    $check_institution_stmt->execute();
+    $result = $check_institution_stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        echo "<script>
+        alert('Institution already exists');
+      </script>";
+        exit();
+    }
+
+    // Check if telephone_number exists
+    $check_telephone_stmt = $conn->prepare("SELECT * FROM vendor_registration WHERE telephone_number = ?");
+    $check_telephone_stmt->bind_param("s", $telephone_number);
+    $check_telephone_stmt->execute();
+    $result = $check_telephone_stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        echo "<script>
+        alert('Telephone number already exists');
+      </script>";
+        exit();
+    }
+
+    // Check if email exists
+    $check_email_stmt = $conn->prepare("SELECT * FROM vendor_registration WHERE email = ?");
+    $check_email_stmt->bind_param("s", $email);
+    $check_email_stmt->execute();
+    $result = $check_email_stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        echo "<script>
+        alert('Email Address already exists');
+      </script>";
+        exit();
+    }
+
     // Generate VendorID using token_class
     $token = new token_class();
-    $vendorID = $token->generateVendorID(); // Assuming generateVendorID() generates a unique VendorID
+    $vendorID = $token->generateVendorID(); 
 
     // Prepare SQL statement to insert vendor registration details
     $stmt = $conn->prepare("INSERT INTO vendor_registration (VendorID, institution_name, telephone_number, email, gps_address, date_created, date_updated) VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -29,10 +69,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Execute the prepared statement
     if ($stmt->execute()) {
         // Send notification email
-        $notification = new Notification(); // Assuming Notification class handles email notifications
+        $notification = new Notification(); 
 
         // Generate and insert passphrase into authentication_audit table
-        $authPassphrase = $notification->generatePassphrase(); // Assuming generatePassphrase() generates a random passphrase
+        $authPassphrase = $notification->generatePassphrase(); 
         $date_expired = date("Y-m-d H:i:s", strtotime('+60 seconds')); // Calculate expiration time
 
         $audit_stmt = $conn->prepare("INSERT INTO authenticate_audit (institution_name, status, date_created, date_updated, date_expired, pin) VALUES (?, 'Active', ?, ?, ?, ?)");
@@ -94,3 +134,4 @@ if (!$update_stmt->execute()) {
 // Close update statement
 $update_stmt->close();
 ?>
+
